@@ -58,6 +58,34 @@ export const RaffleView: React.FC = () => {
       return;
     }
     
+    // Save winners to database immediately after draw
+    if (selectedCategory && selectedWinners.length > 0) {
+      const winnersData: any[] = selectedWinners.map((guide, index) => ({
+        guide_id: guide.id,
+        name: guide.name,
+        supervisor: guide.supervisor,
+        department: guide.department,
+        nps: guide.nps,
+        nrpc: guide.nrpc,
+        refund_percent: guide.refundPercent,
+        total_tickets: guide.totalTickets,
+        prize_category: selectedCategory.id,
+        prize_name: selectedCategory.name,
+        won_at: new Date().toISOString()
+      }));
+
+      try {
+        await addWinners(winnersData);
+        console.log('Winners saved to database successfully');
+      } catch (error) {
+        console.error('Failed to save winners to database:', error);
+        alert('Failed to save winners to database. Please try again.');
+        setIsDrawing(false);
+        setSelectedCategory(null);
+        return;
+      }
+    }
+    
     setAnimationWinners(selectedWinners);
     setDrawnTickets(tickets);
     setShowWinnerAnimation(true);
@@ -65,42 +93,14 @@ export const RaffleView: React.FC = () => {
 
   const handleAnimationComplete = async () => {
     setShowWinnerAnimation(false);
-    
-    if (!selectedCategory) return;
 
-    // Save to database with prize category
-    const winnersData: any[] = animationWinners.map((guide, index) => ({
-      id: crypto.randomUUID(),
-      guide_id: guide.id,
-      name: guide.name,
-      supervisor: guide.supervisor,
-      department: guide.department,
-      nps: guide.nps,
-      nrpc: guide.nrpc,
-      refund_percent: guide.refundPercent,
-      total_tickets: guide.totalTickets,
-      prize_category: selectedCategory.id,
-      prize_name: selectedCategory.name,
-      ticket_numbers: JSON.stringify(guide.ticketNumbers),
-      drawn_ticket: drawnTickets[index],
-      won_at: new Date().toISOString(),
-      created_at: new Date().toISOString()
-    }));
-
-    try {
-      await addWinners(winnersData);
-      
-      // Final celebration confetti
-      confetti({
-        particleCount: 200,
-        spread: 100,
-        origin: { y: 0.4 },
-        colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7']
-      });
-    } catch (error) {
-      console.error('Failed to save winners:', error);
-      alert('Failed to save winners. Please try again.');
-    }
+    // Final celebration confetti
+    confetti({
+      particleCount: 200,
+      spread: 100,
+      origin: { y: 0.4 },
+      colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7']
+    });
     
     setIsDrawing(false);
     setSelectedCategory(null);

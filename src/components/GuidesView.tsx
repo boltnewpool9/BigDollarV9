@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, User, Award, Percent, Ticket } from 'lucide-react';
+import { Search, Filter, User, Award, Percent, Ticket, Download, FileSpreadsheet, FileText } from 'lucide-react';
 import { Guide } from '../types';
 import { assignTicketsToGuides, GuideWithTickets } from '../utils/ticketSystem';
+import { exportUniversalPoolToExcel, exportUniversalPoolToPDF } from '../utils/exportUtils';
 import guidesData from '../data/guides.json';
 
 export const GuidesView: React.FC = () => {
@@ -41,8 +42,47 @@ export const GuidesView: React.FC = () => {
     return { totalTickets, avgNPS, avgNRPC, avgRefund };
   }, [guidesWithTickets]);
 
+  const handleExportUniversalPoolExcel = () => {
+    exportUniversalPoolToExcel(guidesWithTickets);
+  };
+
+  const handleExportUniversalPoolPDF = () => {
+    exportUniversalPoolToPDF(guidesWithTickets);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 space-y-6 p-6">
+      {/* Header with Export Options */}
+      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 text-white border border-white/20 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
+              👥 Universal Pool - All Guides 👥
+            </h2>
+            <p className="text-blue-100 text-lg">Complete database of all shortlisted guides with ticket assignments</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportUniversalPoolExcel}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold hover:from-green-600 hover:to-emerald-700 focus:ring-4 focus:ring-green-500/50 transition-all duration-300 shadow-lg transform hover:scale-105"
+              >
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Excel
+              </button>
+              <button
+                onClick={handleExportUniversalPoolPDF}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold hover:from-blue-600 hover:to-indigo-700 focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 shadow-lg transform hover:scale-105"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                PDF
+              </button>
+            </div>
+            <Download className="w-8 h-8 text-blue-300" />
+          </div>
+        </div>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 text-white border border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
