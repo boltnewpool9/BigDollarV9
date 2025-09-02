@@ -218,9 +218,17 @@ export const GuidesView: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-xs text-blue-200">
-                      <span className="font-mono bg-white/20 px-2 py-1 rounded">
-                        #{guide.ticketRange.start}-#{guide.ticketRange.end}
-                      </span>
+                      <div className="space-y-1">
+                        <span className="font-mono bg-white/20 px-2 py-1 rounded block">
+                          #{guide.ticketRange.start.toString().padStart(4, '0')}-#{guide.ticketRange.end.toString().padStart(4, '0')}
+                        </span>
+                        <div className="text-xs text-white/60">
+                          {guide.ticketNumbers.length > 10 ? 
+                            `${guide.ticketNumbers.slice(0, 5).map(t => `#${t.toString().padStart(4, '0')}`).join(', ')}...+${guide.ticketNumbers.length - 5} more` :
+                            guide.ticketNumbers.map(t => `#${t.toString().padStart(4, '0')}`).join(', ')
+                          }
+                        </div>
+                      </div>
                     </div>
                   </td>
                 </tr>

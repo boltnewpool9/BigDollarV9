@@ -42,5 +42,6 @@ export interface PrizeCategory {
 export interface PrizeWinner extends Winner {
   prize_category: string;
   prize_name: string;
+  ticket_numbers?: string; // JSON string of ticket numbers array
   drawn_ticket?: number;
 }

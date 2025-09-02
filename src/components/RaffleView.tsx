@@ -69,7 +69,7 @@ export const RaffleView: React.FC = () => {
     if (!selectedCategory) return;
 
     // Save to database with prize category
-    const winnersData: any[] = animationWinners.map(guide => ({
+    const winnersData: any[] = animationWinners.map((guide, index) => ({
       id: crypto.randomUUID(),
       guide_id: guide.id,
       name: guide.name,
@@ -81,6 +81,7 @@ export const RaffleView: React.FC = () => {
       total_tickets: guide.totalTickets,
       prize_category: selectedCategory.id,
       prize_name: selectedCategory.name,
+      ticket_numbers: JSON.stringify(guide.ticketNumbers),
       drawn_ticket: drawnTickets[index],
       won_at: new Date().toISOString(),
       created_at: new Date().toISOString()

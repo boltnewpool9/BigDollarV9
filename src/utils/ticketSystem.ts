@@ -6,23 +6,40 @@ export interface GuideWithTickets extends Guide {
 }
 
 export const assignTicketsToGuides = (guides: Guide[]): GuideWithTickets[] => {
-  // Sort guides by ticket count in descending order
+  // Calculate total tickets needed
+  const totalTickets = guides.reduce((sum, guide) => sum + guide.totalTickets, 0);
+  
+  // Create array of all ticket numbers
+  const allTickets = Array.from({ length: totalTickets }, (_, i) => i + 1);
+  
+  // Shuffle the tickets using Fisher-Yates algorithm
+  for (let i = allTickets.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allTickets[i], allTickets[j]] = [allTickets[j], allTickets[i]];
+  }
+  
+  // Sort guides by ticket count in descending order for consistent assignment
   const sortedGuides = [...guides].sort((a, b) => b.totalTickets - a.totalTickets);
   
-  let currentTicketNumber = 1;
+  let ticketIndex = 0;
   const guidesWithTickets: GuideWithTickets[] = [];
 
   for (const guide of sortedGuides) {
     const ticketNumbers: number[] = [];
-    const startTicket = currentTicketNumber;
     
-    // Assign consecutive ticket numbers to each guide
+    // Assign random tickets to each guide
     for (let i = 0; i < guide.totalTickets; i++) {
-      ticketNumbers.push(currentTicketNumber);
-      currentTicketNumber++;
+      if (ticketIndex < allTickets.length) {
+        ticketNumbers.push(allTickets[ticketIndex]);
+        ticketIndex++;
+      }
     }
     
-    const endTicket = currentTicketNumber - 1;
+    // Sort the assigned tickets for display purposes
+    ticketNumbers.sort((a, b) => a - b);
+    
+    const startTicket = Math.min(...ticketNumbers);
+    const endTicket = Math.max(...ticketNumbers);
     
     guidesWithTickets.push({
       ...guide,
@@ -31,23 +48,32 @@ export const assignTicketsToGuides = (guides: Guide[]): GuideWithTickets[] => {
     });
   }
 
-  return guidesWithTickets;
+  // Sort back by original order (by id) for consistent display
+  return guidesWithTickets.sort((a, b) => a.id - b.id);
 };
 
 export const drawRandomTickets = (guidesWithTickets: GuideWithTickets[], count: number): { winners: GuideWithTickets[], drawnTickets: number[] } => {
-  const totalTickets = guidesWithTickets.reduce((sum, guide) => sum + guide.totalTickets, 0);
   const drawnTickets: number[] = [];
   const winners: GuideWithTickets[] = [];
   const availableGuides = [...guidesWithTickets];
 
   for (let i = 0; i < count && availableGuides.length > 0; i++) {
-    // Draw a random ticket number from 1 to totalTickets
-    const randomTicket = Math.floor(Math.random() * totalTickets) + 1;
+    // Get all available ticket numbers from remaining guides
+    const allAvailableTickets: number[] = [];
+    availableGuides.forEach(guide => {
+      allAvailableTickets.push(...guide.ticketNumbers);
+    });
+    
+    if (allAvailableTickets.length === 0) break;
+    
+    // Draw a random ticket from all available tickets
+    const randomIndex = Math.floor(Math.random() * allAvailableTickets.length);
+    const randomTicket = allAvailableTickets[randomIndex];
     drawnTickets.push(randomTicket);
     
     // Find which guide owns this ticket
     const winnerGuide = availableGuides.find(guide => 
-      randomTicket >= guide.ticketRange.start && randomTicket <= guide.ticketRange.end
+      guide.ticketNumbers.includes(randomTicket)
     );
     
     if (winnerGuide) {
@@ -63,6 +89,6 @@ export const drawRandomTickets = (guidesWithTickets: GuideWithTickets[], count: 
 
 export const findGuideByTicket = (ticketNumber: number, guidesWithTickets: GuideWithTickets[]): GuideWithTickets | null => {
   return guidesWithTickets.find(guide => 
-    ticketNumber >= guide.ticketRange.start && ticketNumber <= guide.ticketRange.end
+    guide.ticketNumbers.includes(ticketNumber)
   ) || null;
 };
